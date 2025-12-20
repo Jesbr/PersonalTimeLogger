@@ -1,8 +1,25 @@
 from tkinter import *
 from tkinter import ttk
+from functools import partial
+from calculator import add_time, subtract_time
 
 large_font = ("Helvetica", 24)
 small_font = ("Helvetica", 18)
+
+def validate_entry(P, max_length):
+    if P.isdigit() or P == "":
+        if len(P) <= max_length:
+            return True
+        else:
+            return False
+    else:
+        return False
+    
+def ifZero(x):
+    if (x == ""):
+        return 0
+    else:
+        return int(x)
 
 window = Tk()
 window.geometry("600x600")
@@ -23,6 +40,9 @@ logTitle.config(font=large_font)
 logTitle.place(x=0,y=0)
 
 #calcTab
+twoVcmd = (calcTab.register(partial(validate_entry, max_length=2)), '%P')
+threeVcmd = (calcTab.register(partial(validate_entry, max_length=3)), '%P')
+
 calcTitle = Label(calcTab,text="Time Calculator")
 calcTitle.config(font=large_font)
 calcTitle.place(x=0, y=0)
@@ -31,8 +51,8 @@ calcOrg.config(font=small_font)
 calcOrg.place(relx=0.5, y=75, anchor="center")
 
 firstEntries = 150
-opEntries = 225
-secondEntries = 300
+secondEntries = 225
+opEntries = 300
 resultOutput = 400
 
 posOne = 195
@@ -49,56 +69,114 @@ plus.place(x=220,y=opEntries,anchor="center")
 minus.place(x=380,y=opEntries,anchor="center")
 x.set(1)
 
-#days
+# first row
 day1 = Entry(calcTab)
-day1.config(width=3, font=large_font)
+day1.config(width=3, font=large_font, validate="key", validatecommand=threeVcmd)
 day1.place(x=posOne, y=firstEntries, anchor="center")
 
+hour1 = Entry(calcTab)
+hour1.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+hour1.place(x=posTwo, y=firstEntries, anchor="center")
+
+minute1 = Entry(calcTab)
+minute1.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+minute1.place(x=posThree, y=firstEntries, anchor="center")
+
+second1 = Entry(calcTab)
+second1.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+second1.place(x=posFour, y=firstEntries, anchor="center")
+
+# second row
 day2 = Entry(calcTab)
-day2.config(width=3, font=large_font)
+day2.config(width=3, font=large_font, validate="key", validatecommand=threeVcmd)
 day2.place(x=posOne, y=secondEntries, anchor="center")
 
+hour2 = Entry(calcTab)
+hour2.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+hour2.place(x=posTwo, y=secondEntries, anchor="center")
+
+minute2 = Entry(calcTab)
+minute2.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+minute2.place(x=posThree, y=secondEntries, anchor="center")
+
+second2 = Entry(calcTab)
+second2.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+second2.place(x=posFour, y=secondEntries, anchor="center")
+
+#sign
+showSign = Label(calcTab,text="")
+showSign.config(font=small_font)
+showSign.place(relx=0.5, y=350, anchor="center")
+
+# third row
 day3 = Entry(calcTab)
 day3.config(state=DISABLED, width=3, font=large_font)
 day3.place(x=posOne, y=resultOutput, anchor="center")
-
-#hours
-hour1 = Entry(calcTab)
-hour1.config(width=2, font=large_font)
-hour1.place(x=posTwo, y=firstEntries, anchor="center")
-
-hour2 = Entry(calcTab)
-hour2.config(width=2, font=large_font)
-hour2.place(x=posTwo, y=secondEntries, anchor="center")
 
 hour3 = Entry(calcTab)
 hour3.config(state=DISABLED, width=2, font=large_font)
 hour3.place(x=posTwo, y=resultOutput, anchor="center")
 
-#minutes
-minute1 = Entry(calcTab)
-minute1.config(width=2, font=large_font)
-minute1.place(x=posThree, y=firstEntries, anchor="center")
-
-minute2 = Entry(calcTab)
-minute2.config(width=2, font=large_font)
-minute2.place(x=posThree, y=secondEntries, anchor="center")
-
 minute3 = Entry(calcTab)
 minute3.config(state=DISABLED, width=2, font=large_font)
 minute3.place(x=posThree, y=resultOutput, anchor="center")
 
-#seconds
-second1 = Entry(calcTab)
-second1.config(width=2, font=large_font)
-second1.place(x=posFour, y=firstEntries, anchor="center")
-
-second2 = Entry(calcTab)
-second2.config(width=2, font=large_font)
-second2.place(x=posFour, y=secondEntries, anchor="center")
-
 second3 = Entry(calcTab)
 second3.config(state=DISABLED, width=2, font=large_font)
 second3.place(x=posFour, y=resultOutput, anchor="center")
+
+def normalize():
+    day3.config(state=NORMAL)
+    day3.insert(0, "    ")
+    hour3.config(state=NORMAL)
+    hour3.insert(0, "  ")
+    minute3.config(state=NORMAL)
+    minute3.insert(0, "  ")
+    second3.config(state=NORMAL)
+    second3.insert(0, "  ")
+
+def disablize():
+    day3.config(state=DISABLED)
+    hour3.config(state=DISABLED)
+    minute3.config(state=DISABLED)
+    second3.config(state=DISABLED)
+
+def click():
+    normalize()
+    d1 = ifZero(day1.get())
+    h1 = ifZero(hour1.get())
+    m1 = ifZero(minute1.get())
+    s1 = ifZero(second1.get())
+    d2 = ifZero(day2.get())
+    h2 = ifZero(hour2.get())
+    m2 = ifZero(minute2.get())
+    s2 = ifZero(second2.get())
+    d3 = 0
+    h3 = 0
+    m3 = 0
+    s3 = 0
+    sign = ""
+    
+    selected = x.get()
+    if selected == 1: #Plus is selected
+        d3, h3, m3, s3 = add_time(d1, h1, m1, s1, d2, h2, m2, s2)
+        sign = ""
+    elif selected == 2: #Minus is selected
+        sign, d3, h3, m3, s3 = subtract_time(d1, h1, m1, s1, d2, h2, m2, s2)
+    
+    if (sign == ""):
+        showSign.config(text="")
+    elif (sign == "-"):
+        showSign.config(text="negative time!")
+    day3.insert(0, str(d3))
+    hour3.insert(0, str(h3))
+    minute3.insert(0, str(m3))
+    second3.insert(0, str(s3))
+    disablize()
+    
+
+equalsButton = Button(calcTab,text="=")
+equalsButton.config(command=click, font=small_font)
+equalsButton.place(x=122, y=resultOutput, anchor="center")
 
 window.mainloop()
