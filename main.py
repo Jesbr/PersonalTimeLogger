@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import scrolledtext
 from functools import partial
 from calculator import add_time, subtract_time
 
@@ -22,7 +23,8 @@ def ifZero(x):
         return int(x)
 
 window = Tk()
-window.geometry("600x600")
+xField = 900
+window.geometry(f"900x{xField}")
 window.title("PTL")
 window.config(background="black")
 
@@ -54,19 +56,22 @@ firstEntries = 150
 secondEntries = 225
 opEntries = 300
 resultOutput = 400
+ruleY = 500
+textOutput = 650
 
-posOne = 195
-posTwo = 268
-posThree = 332
-posFour = 395
+centerField = xField / 2
+posOne =  centerField - 105         #195
+posTwo = centerField - 32           #268
+posThree = centerField + 32         #332
+posFour = centerField + 95          #395
 
 #operations
 x = IntVar()
 
 plus = Radiobutton(calcTab, text="Plus+", variable=x,value=1, font=small_font)
 minus = Radiobutton(calcTab, text="Minus-", variable=x,value=2, font=small_font)
-plus.place(x=220,y=opEntries,anchor="center")
-minus.place(x=380,y=opEntries,anchor="center")
+plus.place(x=centerField-80,y=opEntries,anchor="center")
+minus.place(x=centerField+80,y=opEntries,anchor="center")
 x.set(1)
 
 # first row
@@ -125,15 +130,26 @@ second3 = Entry(calcTab)
 second3.config(state=DISABLED, width=2, font=large_font)
 second3.place(x=posFour, y=resultOutput, anchor="center")
 
+ruleSign = Label(calcTab,text="Entry One       +/-        Entry Two        =          Result")
+ruleSign.config(font=small_font)
+ruleSign.place(relx=0.5, y=ruleY, anchor="center")
+
+historyText = scrolledtext.ScrolledText(calcTab,font=small_font, height=8,width=55)
+historyText.place(x=centerField, y=textOutput, anchor="center")
+
 def normalize():
     day3.config(state=NORMAL)
-    day3.insert(0, "    ")
+    #day3.insert(0, "    ")
+    day3.delete(0, END)
     hour3.config(state=NORMAL)
-    hour3.insert(0, "  ")
+    #hour3.insert(0, "  ")
+    hour3.delete(0, END)
     minute3.config(state=NORMAL)
-    minute3.insert(0, "  ")
+    #minute3.insert(0, "  ")
+    minute3.delete(0, END)
     second3.config(state=NORMAL)
-    second3.insert(0, "  ")
+    #second3.insert(0, "  ")
+    second3.delete(0, END)
 
 def disablize():
     day3.config(state=DISABLED)
@@ -156,18 +172,21 @@ def click():
     m3 = 0
     s3 = 0
     sign = ""
+    addNewText = ""
     
     selected = x.get()
     if selected == 1: #Plus is selected
-        d3, h3, m3, s3 = add_time(d1, h1, m1, s1, d2, h2, m2, s2)
+        addNewText, d3, h3, m3, s3 = add_time(d1, h1, m1, s1, d2, h2, m2, s2)
         sign = ""
     elif selected == 2: #Minus is selected
-        sign, d3, h3, m3, s3 = subtract_time(d1, h1, m1, s1, d2, h2, m2, s2)
+        addNewText, sign, d3, h3, m3, s3 = subtract_time(d1, h1, m1, s1, d2, h2, m2, s2)
     
     if (sign == ""):
         showSign.config(text="")
     elif (sign == "-"):
         showSign.config(text="negative time!")
+    historyText.insert(END, f" {addNewText}\n", "center")
+    historyText.see("end")
     day3.insert(0, str(d3))
     hour3.insert(0, str(h3))
     minute3.insert(0, str(m3))
@@ -177,6 +196,6 @@ def click():
 
 equalsButton = Button(calcTab,text="=")
 equalsButton.config(command=click, font=small_font)
-equalsButton.place(x=122, y=resultOutput, anchor="center")
+equalsButton.place(x=centerField-178, y=resultOutput, anchor="center")
 
 window.mainloop()
