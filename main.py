@@ -1,12 +1,63 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import scrolledtext
+from tkinter import messagebox
 from functools import partial
 from calculator import add_time, subtract_time
 
+# globals
 large_font = ("Helvetica", 24)
 small_font = ("Helvetica", 18)
+tasks_list = []
+todoCounter = 1
 
+# todo functions
+def inputError() :
+    if enterTodoTaskField.get().strip() == "" :
+        messagebox.showerror("Input Error")
+        return 0
+    return 1
+
+def clear_taskNumberField() :
+    taskNumberField.delete(0.0, END)
+
+def clear_taskField() :
+    enterTodoTaskField.delete(0, END)
+
+def insertTask():
+    global todoCounter
+    value = inputError()
+    if value == 0 :
+        return
+    content = enterTodoTaskField.get()
+    tasks_list.append(content)
+    TextArea.insert('end -1 chars', f"[{todoCounter}] {content} \n")
+    todoCounter += 1
+    clear_taskField()
+    taskError.config(text="")
+
+def delete() :
+    global todoCounter
+    if not tasks_list:
+        taskError.config(text="No task")
+        return
+    try:
+        task_no = int(taskNumberField.get(1.0, END))
+        if task_no < 1 or task_no > len(tasks_list):
+            raise ValueError
+    except ValueError:
+        taskError.config(text="Enter a valid task number")
+        return
+
+    tasks_list.pop(task_no - 1)
+    todoCounter -= 1
+    clear_taskNumberField()
+    TextArea.delete(1.0, END)
+    for i, task in enumerate(tasks_list, start=1):
+        TextArea.insert(END, f"[{i}] {task}\n")
+    taskError.config(text="")
+
+# calcTab functions
 def validate_entry(P, max_length):
     if P.isdigit() or P == "":
         if len(P) <= max_length:
@@ -16,12 +67,13 @@ def validate_entry(P, max_length):
     else:
         return False
     
-def ifZero(x):
+def checkZero(x):
     if (x == ""):
         return 0
     else:
         return int(x)
 
+# window info
 window = Tk()
 xField = 900
 window.geometry(f"900x{xField}")
@@ -30,9 +82,11 @@ window.config(background="black")
 
 notebook = ttk.Notebook(window)
 logTab = Frame(notebook, bg="blue")
+todoTab = Frame(notebook, bg="red")
 calcTab = Frame(notebook, bg="black")
 
 notebook.add(logTab,text="PTL")
+notebook.add(todoTab,text="Task List")
 notebook.add(calcTab,text="Calculator")
 notebook.pack(expand=True,fill="both")
 
@@ -40,6 +94,25 @@ notebook.pack(expand=True,fill="both")
 logTitle = Label(logTab,text="Personal Time Log")
 logTitle.config(font=large_font)
 logTitle.place(x=0,y=0)
+
+#todoTab
+enterTask = Label(todoTab, text = "Enter Your Task", bg = "light green", font=small_font)
+enterTodoTaskField = Entry(todoTab, font=small_font)
+Submit = Button(todoTab, text = "Submit", font=small_font, fg = "Black", bg = "Red", command = insertTask)
+TextArea = scrolledtext.ScrolledText(todoTab, height = 5, width = 25, font =small_font)
+taskNumber = Label(todoTab, text = "Delete Task Number", font=small_font, bg = "blue")                       
+taskNumberField = Text(todoTab, height = 1, width = 2, font =small_font)
+deleteButton = Button(todoTab, text = "Delete", font=small_font, fg = "Black", bg = "Red", command = delete)
+taskError = Label(todoTab, bg = "red", font=small_font) 
+
+enterTask.grid(row = 0, column = 2)
+enterTodoTaskField.grid(row = 1, column = 2, ipadx = 50)
+Submit.grid(row = 2, column = 2)
+TextArea.grid(row = 3, column = 2, padx = 10) # sticky = W
+taskNumber.grid(row = 4, column = 2, pady = 5)
+taskNumberField.grid(row = 5, column = 2)
+deleteButton.grid(row = 6, column = 2, pady = 5)
+taskError.grid(row = 7, column = 2, pady = 5)
 
 #calcTab
 twoVcmd = (calcTab.register(partial(validate_entry, max_length=2)), '%P')
@@ -159,14 +232,14 @@ def disablize():
 
 def click():
     normalize()
-    d1 = ifZero(day1.get())
-    h1 = ifZero(hour1.get())
-    m1 = ifZero(minute1.get())
-    s1 = ifZero(second1.get())
-    d2 = ifZero(day2.get())
-    h2 = ifZero(hour2.get())
-    m2 = ifZero(minute2.get())
-    s2 = ifZero(second2.get())
+    d1 = checkZero(day1.get())
+    h1 = checkZero(hour1.get())
+    m1 = checkZero(minute1.get())
+    s1 = checkZero(second1.get())
+    d2 = checkZero(day2.get())
+    h2 = checkZero(hour2.get())
+    m2 = checkZero(minute2.get())
+    s2 = checkZero(second2.get())
     d3 = 0
     h3 = 0
     m3 = 0
