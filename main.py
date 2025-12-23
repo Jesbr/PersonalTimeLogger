@@ -76,6 +76,7 @@ def checkZero(x):
 # window info
 window = Tk()
 xField = 900
+centerField = xField / 2
 window.geometry(f"900x{xField}")
 window.title("PTL")
 window.config(background="black")
@@ -95,24 +96,52 @@ logTitle = Label(logTab,text="Personal Time Log")
 logTitle.config(font=large_font)
 logTitle.place(x=0,y=0)
 
+recordingYpos = 100
+
+recordStart = Button(logTab, text="Start", font=small_font)
+recordNote = Button(logTab, text="Note", font=small_font, state=DISABLED)
+recordEnd = Button(logTab, text="End", font=small_font, state=DISABLED)
+recordEdit = Label(logTab, text="Edit note number:", font=small_font)
+noteField = Entry(logTab, font=small_font, width=50)
+editNumberField = Entry(logTab, font=small_font, width=2)
+recordEditButton = Button(logTab, text="Edit", font=small_font)
+noteError = Label(logTab, bg = "red", font=small_font)
+logTitleLabel = Label(logTab, bg = "blue", font=small_font, text="Log Title:")
+recordTextField = scrolledtext.ScrolledText(logTab, font=small_font,width=50, height=11)
+
+recordStart.place(x=centerField-105, y=recordingYpos, anchor="center")
+recordNote.place(x=centerField, y=recordingYpos, anchor="center")
+recordEnd.place(x=centerField+105, y=recordingYpos, anchor="center")
+noteField.place(x=centerField, y=recordingYpos+50, anchor="center")
+recordEdit.place(x=centerField-150, y=recordingYpos+100, anchor="center")
+editNumberField.place(x=centerField, y=recordingYpos+100, anchor="center")
+recordEditButton.place(x=centerField+70, y=recordingYpos+100, anchor="center")
+noteError.place(x=centerField, y=recordingYpos+150, anchor="center")
+logTitleLabel.place(x=centerField-325, y=recordingYpos+200, anchor="center")
+recordTextField.place(x=centerField, y=recordingYpos+450, anchor="center")
+
 #todoTab
+todoTitle = Label(todoTab,text="Task List")
+todoTitle.config(font=large_font)
+todoTitle.place(x=0, y=0)
+
 enterTask = Label(todoTab, text = "Enter Your Task", bg = "light green", font=small_font)
 enterTodoTaskField = Entry(todoTab, font=small_font)
 Submit = Button(todoTab, text = "Submit", font=small_font, fg = "Black", bg = "Red", command = insertTask)
-TextArea = scrolledtext.ScrolledText(todoTab, height = 5, width = 25, font =small_font)
+TextArea = scrolledtext.ScrolledText(todoTab, height = 5, width = 25, font=small_font)
 taskNumber = Label(todoTab, text = "Delete Task Number", font=small_font, bg = "blue")                       
 taskNumberField = Text(todoTab, height = 1, width = 2, font =small_font)
 deleteButton = Button(todoTab, text = "Delete", font=small_font, fg = "Black", bg = "Red", command = delete)
 taskError = Label(todoTab, bg = "red", font=small_font) 
 
-enterTask.grid(row = 0, column = 2)
-enterTodoTaskField.grid(row = 1, column = 2, ipadx = 50)
-Submit.grid(row = 2, column = 2)
-TextArea.grid(row = 3, column = 2, padx = 10) # sticky = W
-taskNumber.grid(row = 4, column = 2, pady = 5)
-taskNumberField.grid(row = 5, column = 2)
-deleteButton.grid(row = 6, column = 2, pady = 5)
-taskError.grid(row = 7, column = 2, pady = 5)
+enterTask.place(x=centerField, y=recordingYpos, anchor="center")
+enterTodoTaskField.place(x=centerField, y=recordingYpos+50, anchor="center")
+Submit.place(x=centerField, y=recordingYpos+100, anchor="center")
+TextArea.place(x=centerField, y=recordingYpos+210, anchor="center")
+taskNumber.place(x=centerField-60, y=recordingYpos+320, anchor="center")
+taskNumberField.place(x=centerField+100, y=recordingYpos+320, anchor="center")
+deleteButton.place(x=centerField, y=recordingYpos+370, anchor="center")
+taskError.place(x=centerField, y=recordingYpos+420, anchor="center")
 
 #calcTab
 twoVcmd = (calcTab.register(partial(validate_entry, max_length=2)), '%P')
@@ -132,7 +161,6 @@ resultOutput = 400
 ruleY = 500
 textOutput = 650
 
-centerField = xField / 2
 posOne =  centerField - 105         #195
 posTwo = centerField - 32           #268
 posThree = centerField + 32         #332
@@ -182,7 +210,7 @@ second2.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd
 second2.place(x=posFour, y=secondEntries, anchor="center")
 
 #sign
-showSign = Label(calcTab,text="")
+showSign = Label(calcTab,text="", bg="black")
 showSign.config(font=small_font)
 showSign.place(relx=0.5, y=350, anchor="center")
 
@@ -255,9 +283,9 @@ def click():
         addNewText, sign, d3, h3, m3, s3 = subtract_time(d1, h1, m1, s1, d2, h2, m2, s2)
     
     if (sign == ""):
-        showSign.config(text="")
+        showSign.config(text="", bg="black")
     elif (sign == "-"):
-        showSign.config(text="negative time!")
+        showSign.config(text="negative time!", bg="white")
     historyText.insert(END, f" {addNewText}\n", "center")
     historyText.see("end")
     day3.insert(0, str(d3))
