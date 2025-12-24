@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import scrolledtext
 from tkinter import messagebox
+from tkinter import simpledialog
+from datetime import datetime
 from functools import partial
 from calculator import add_time, subtract_time
 
@@ -10,23 +12,150 @@ large_font = ("Helvetica", 24)
 small_font = ("Helvetica", 18)
 tasks_list = []
 todoCounter = 1
+note_list = []
+note_time_list = []
+noteCounter = 1
 
-# todo functions
-def inputError() :
-    if enterTodoTaskField.get().strip() == "" :
-        messagebox.showerror("Input Error")
+def get_current_time():
+    return datetime.now().strftime("%H:%M:%S")
+
+def inputError(field) :
+    if field.strip() == "" :
+        messagebox.showerror("Error:", "Nothing Entered")
         return 0
     return 1
 
-def clear_taskNumberField() :
+# log functions
+def clear_editNumberField():
+    editNumberField.delete(0, END)
+
+def clear_noteField():
+    noteField.delete(0, END)
+
+def clear_recordTextField():
+    recordTextField.delete(0.0, END)
+
+def recordClick():
+    global noteCounter
+    global note_list
+    global note_time_list
+    noteCounter == 1
+    clear_recordTextField()
+    note_list = []
+    note_time_list = []
+    title = simpledialog.askstring("Input Title", "What is your Log's Title?")
+    description = simpledialog.askstring("Input Description", "What is the Log about?")
+    value = inputError(title)
+    if value == 0 :
+        return
+    
+    cTime = get_current_time()
+    logTitleLabel.config(text=f"Log Title: {title}")
+    logDescriptionLabel.config(text=f"")
+    if description != "":
+        logDescriptionLabel.config(text=f"Description: {description}")
+    topEntry = f"{cTime} - Start of Log {title}: \n"
+    note_list.append(topEntry)
+    note_time_list.append(f"{cTime}")
+    noteCounter += 1
+    recordTextField.insert('end -1 chars', topEntry)
+
+    clear_editNumberField()
+    clear_noteField()
+    noteError.config(text="")
+    recordStart.config(state=DISABLED)
+    recordNote.config(state=NORMAL)
+    recordEnd.config(state=NORMAL)
+
+def noteClick():
+    global noteCounter
+    global note_list
+    global note_time_list
+    value = inputError(noteField.get())
+    if value == 0 :
+        return
+    
+    cTime = get_current_time()
+    note_time_list.append(f"{cTime}")
+    content = f"{noteField.get()}"
+    note_list.append(content)
+    recordTextField.insert('end -1 chars', f"[{noteCounter-1}] {cTime} - {content} \n")
+    noteCounter += 1
+    clear_editNumberField()
+    clear_noteField()
+    noteError.config(text="")
+    return
+
+def endClick():
+
+    clear_editNumberField()
+    clear_noteField()
+    noteError.config(text="")
+    recordStart.config(state=NORMAL)
+    recordNote.config(state=DISABLED)
+    recordEnd.config(state=DISABLED)
+
+def editNoteClick():
+    global noteCounter
+    global note_list
+    global note_time_list
+    if len(note_list)<2:
+        noteError.config(text="No notes")
+        return
+    try:
+        note_no = int(editNumberField.get()) # 1.0, END
+        if note_no < 1 or note_no > len(note_list)-1:
+            raise ValueError
+    except ValueError:
+        noteError.config(text="Enter a valid note number")
+        return
+    
+    clear_editNumberField()
+    clear_noteField()
+    noteError.config(text="")
+    return
+
+def deleteNoteClick():
+    global noteCounter
+    global note_list
+    global note_time_list
+    if len(note_list)<2:
+        noteError.config(text="No notes")
+        return
+    try:
+        note_no = int(editNumberField.get()) #1.0, END
+        if note_no < 1 or note_no > len(note_list)-1:
+            raise ValueError
+    except ValueError:
+        noteError.config(text="Enter a valid note number")
+        return
+    
+    note_list.pop(note_no)
+    note_time_list.pop(note_no)
+    noteCounter -= 1
+    clear_editNumberField()
+    recordTextField.delete(1.0, END)
+    #recordTextField.insert(END, f"{note_list[0]}")
+    for i, note in enumerate(note_list, start=1):
+        if i == 1:
+            recordTextField.insert(END, f"{note_list[0]}")
+        else:
+            recordTextField.insert(END, f"[{i-1}] {note_time_list[i-1]} - {note}\n")
+    clear_editNumberField()
+    clear_noteField()
+    noteError.config(text="")
+    return
+
+# todo functions
+def clear_taskNumberField():
     taskNumberField.delete(0.0, END)
 
-def clear_taskField() :
+def clear_taskField():
     enterTodoTaskField.delete(0, END)
 
 def insertTask():
     global todoCounter
-    value = inputError()
+    value = inputError(enterTodoTaskField.get())
     if value == 0 :
         return
     content = enterTodoTaskField.get()
@@ -98,15 +227,17 @@ logTitle.place(x=0,y=0)
 
 recordingYpos = 100
 
-recordStart = Button(logTab, text="Start", font=small_font)
-recordNote = Button(logTab, text="Note", font=small_font, state=DISABLED)
-recordEnd = Button(logTab, text="End", font=small_font, state=DISABLED)
+recordStart = Button(logTab, text="Start", command=recordClick, font=small_font)
+recordNote = Button(logTab, text="Note", command=noteClick, font=small_font, state=DISABLED)
+recordEnd = Button(logTab, text="End", command=endClick, font=small_font, state=DISABLED)
 recordEdit = Label(logTab, text="Edit note number:", font=small_font)
 noteField = Entry(logTab, font=small_font, width=50)
 editNumberField = Entry(logTab, font=small_font, width=2)
-recordEditButton = Button(logTab, text="Edit", font=small_font)
+recordEditButton = Button(logTab, text="Edit", command=editNoteClick, font=small_font)
+noteDeleteButton = Button(logTab, text="Delete", command=deleteNoteClick, font=small_font)
 noteError = Label(logTab, bg = "red", font=small_font)
 logTitleLabel = Label(logTab, bg = "blue", font=small_font, text="Log Title:")
+logDescriptionLabel = Label(logTab, bg = "blue", font=small_font, text="Description:")
 recordTextField = scrolledtext.ScrolledText(logTab, font=small_font,width=50, height=11)
 
 recordStart.place(x=centerField-105, y=recordingYpos, anchor="center")
@@ -116,8 +247,10 @@ noteField.place(x=centerField, y=recordingYpos+50, anchor="center")
 recordEdit.place(x=centerField-150, y=recordingYpos+100, anchor="center")
 editNumberField.place(x=centerField, y=recordingYpos+100, anchor="center")
 recordEditButton.place(x=centerField+70, y=recordingYpos+100, anchor="center")
+noteDeleteButton.place(x=centerField+150, y=recordingYpos+100, anchor="center")
 noteError.place(x=centerField, y=recordingYpos+150, anchor="center")
-logTitleLabel.place(x=centerField-325, y=recordingYpos+200, anchor="center")
+logTitleLabel.place(x=centerField, y=recordingYpos+200, anchor="center")
+logDescriptionLabel.place(x=centerField, y=recordingYpos+250, anchor="center")
 recordTextField.place(x=centerField, y=recordingYpos+450, anchor="center")
 
 #todoTab
@@ -258,7 +391,7 @@ def disablize():
     minute3.config(state=DISABLED)
     second3.config(state=DISABLED)
 
-def click():
+def calcClick():
     normalize()
     d1 = checkZero(day1.get())
     h1 = checkZero(hour1.get())
@@ -296,7 +429,7 @@ def click():
     
 
 equalsButton = Button(calcTab,text="=")
-equalsButton.config(command=click, font=small_font)
+equalsButton.config(command=calcClick, font=small_font)
 equalsButton.place(x=centerField-178, y=resultOutput, anchor="center")
 
 window.mainloop()
