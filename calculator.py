@@ -56,11 +56,10 @@ def subtract_time(d1, h1, m1, s1, d2, h2, m2, s2):
     formatTime1 = format_timedelta(time1)
     formatTime2 = format_timedelta(time2)
     formatTime3 = format_timedelta(totalSeconds)
-    resultTime = f"({formatTime1}) - ({formatTime2}) = -({formatTime3})"
-
     total = int(totalSeconds.total_seconds())
 
     sign = "-" if total < 0 else ""
+    resultTime = f"({formatTime1}) - ({formatTime2}) = {sign}({formatTime3})"
     total = abs(total)
 
     d = total // 86400
