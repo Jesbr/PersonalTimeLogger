@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import scrolledtext
 from tkinter import simpledialog
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 from calculator import add_time, subtract_time
 
@@ -15,6 +15,18 @@ todoCounter = 1
 tasks_list = []
 timeStart = datetime.now()
 timeEnd = datetime.now()
+
+# timer globals
+timer_running = False
+timer_job = None
+elapsed_seconds = 0
+
+def run_timer():
+    global elapsed_seconds, timer_job
+
+    if timer_running:
+        elapsed_seconds += 1
+        timer_job = window.after(1000, run_timer)
 
 def get_current_time():
     return datetime.now().strftime("%H:%M:%S")
@@ -43,15 +55,17 @@ def recordClick():
     if value == 0 :
         return
     
-    global note_list
-    global note_time_list
-    global timeStart
+    global note_list, note_time_list
+    global timer_running, elapsed_seconds, timeStart
     clear_recordTextField()
     note_list = []
     note_time_list = []
 
-    recordTextField.config(state=NORMAL)
+    elapsed_seconds = 0
+    timer_running = True
     timeStart = datetime.now()
+    run_timer()
+    recordTextField.config(state=NORMAL)
     cTime = get_current_time()
     logTitleLabel.config(text=f"Log Title: {title}")
     logDescriptionLabel.config(text=f"")
@@ -71,8 +85,7 @@ def recordClick():
     recordEnd.config(state=NORMAL)
 
 def noteClick():
-    global note_list
-    global note_time_list
+    global note_list, note_time_list
     value = inputError(noteField.get(), noteError)
     if value == 0 :
         return
@@ -90,15 +103,20 @@ def noteClick():
     return
 
 def endClick():
-    global timeStart
-    global timeEnd
+    global timeStart, timeEnd
+    global timer_running, elapsed_seconds, timer_job, timeStart
     
     recordTextField.config(state=NORMAL)
     cTime = get_current_time()
     timeEnd = datetime.now()
-    #totalTime = timeEnd - timeStart
-    #timeString = totalTime.replace(microsecond=0)
-    recordTextField.insert('end -1 chars', f"{cTime} - End of log")
+    
+    timer_running = False
+    if timer_job is not None:
+        window.after_cancel(timer_job)
+        timer_job = None
+    total_time = timedelta(seconds=elapsed_seconds)
+
+    recordTextField.insert('end -1 chars', f"{cTime} - End of log (Elapsed: {total_time})\n")
     clear_editNumberField()
     clear_noteField()
     noteError.config(text="", bg = "blue")
@@ -271,6 +289,7 @@ logTitle.place(x=0,y=0)
 recordingYpos = 100
 
 recordStart = Button(logTab, text="Start", command=recordClick, font=small_font)
+recordNoteLabel = Label(logTab, text="click to record a note:", font=small_font)
 recordNote = Button(logTab, text="Note", command=noteClick, font=small_font, state=DISABLED)
 recordEnd = Button(logTab, text="End", command=endClick, font=small_font, state=DISABLED)
 recordEdit = Label(logTab, text="Edit note number:", font=small_font)
@@ -286,7 +305,8 @@ recordTextField = scrolledtext.ScrolledText(logTab, font=small_font,width=50, he
 
 recordStart.place(x=centerField-55, y=recordingYpos, anchor="center")
 recordEnd.place(x=centerField+55, y=recordingYpos, anchor="center")
-recordNote.place(x=centerField, y=recordingYpos+50, anchor="center")
+recordNoteLabel.place(x=centerField-140, y=recordingYpos+50, anchor="center")
+recordNote.place(x=centerField+50, y=recordingYpos+50, anchor="center")
 noteField.place(x=centerField, y=recordingYpos+100, anchor="center")
 recordEdit.place(x=centerField-150, y=recordingYpos+150, anchor="center")
 editNumberField.place(x=centerField, y=recordingYpos+150, anchor="center")
@@ -435,6 +455,7 @@ def disablize():
     second3.config(state=DISABLED)
 
 def calcClick():
+    setResult.config(state=NORMAL)
     normalize()
     d1 = checkZero(day1.get())
     h1 = checkZero(hour1.get())
@@ -469,7 +490,20 @@ def calcClick():
     minute3.insert(0, str(m3))
     second3.insert(0, str(s3))
     disablize()
+
+def resultClick():
+    day1.delete(0, END)
+    hour1.delete(0, END)
+    minute1.delete(0, END)
+    second1.delete(0, END)
+    day1.insert(0, day3.get())
+    hour1.insert(0, hour3.get())
+    minute1.insert(0, minute3.get())
+    second1.insert(0, second3.get())
     
+setResult = Button(calcTab, text="set result:")
+setResult.config(font=small_font,command=resultClick, state=DISABLED)
+setResult.place(x=posOne-120, y=firstEntries, anchor="center")
 
 equalsButton = Button(calcTab,text="=")
 equalsButton.config(command=calcClick, font=small_font)
