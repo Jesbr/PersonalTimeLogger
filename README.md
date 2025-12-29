@@ -17,25 +17,29 @@ There is also a history list at the bottom, showing past calculations entered wi
 - Python 3.12.3+
 - Tkinter (usually installed with Python on windows/MacOS)
 
-First ensure Python is installed with: python3 --version
-Ensure Tkinter is installed with: python3 -m tkinter
-    A new window should appear displaying the Tkinter version number and information.
+First ensure Python is installed with:
+- python3 --version
+Ensure Tkinter is installed with:
+- python3 -m tkinter
+A new window should appear displaying the Tkinter version number and information.
 
 ## Installing Tkinter on Linux:
 Note: I have little to no experience with Linux as of yet, this has simply been double checked with google.
 
 - Linux (Ubuntu/Debian):
-sudo apt update
-sudo apt install python3-tk
+- sudo apt update
+- sudo apt install python3-tk
 
 - Linux Arch:
-sudo pacman -S tk
+- sudo pacman -S tk
 
 - Linux Fedora:
-sudo dnf install python3-tkinter
+- sudo dnf install python3-tkinter
 
 ## Clone and run:
 Clone the repository with: git clone https://github.com/Jesbr/PersonalTimeLogger.git
 This should create a folder with: main.py, calculator.py, README.md, and __pycache__/.
-go to the project folder with: cd PersonalTimeLogger
-run the program with: python3 main.py
+go to the project folder with:
+- cd PersonalTimeLogger
+run the program with:
+- python3 main.py
