@@ -15,7 +15,7 @@ calcTabBackground = "green"
 warningBackground = "red"
 note_list = []
 note_time_list = []
-todoCounter = 1
+todoCounter = 0
 tasks_list = []
 timeStart = datetime.now()
 timeEnd = datetime.now()
@@ -36,7 +36,7 @@ def get_current_time():
     return datetime.now().strftime("%H:%M:%S")
 
 # check for empty entries
-def inputError(field, errorField) :
+def inputError(field, errorField):
     if field.strip() == "":
         errorField.config(text="Nothing Entered", bg = warningBackground)
         return 0
@@ -59,10 +59,18 @@ def editTitleClick():
         return
     logTitleLabel.config(text=f"Log Title: {title}")
     note_list[0] = f"{note_time_list[0]} - Start of Log {title}: \n"
+    recordTextField.config(state=NORMAL)
+    recordTextField.delete(1.0, END)
+    for i, note in enumerate(note_list, start=1):
+        if i == 1:
+            recordTextField.insert(END, f"{note_list[0]}")
+        else:
+            recordTextField.insert(END, f"[{i-1}] {note_time_list[i-1]} - {note}\n")
+    recordTextField.config(state=DISABLED)
     noteError.config(text="", bg = logTabBackground)
 
 def editDescClick():
-    description = simpledialog.askstring("Input Description", "What is the Log about?")
+    description = simpledialog.askstring("Input Description", "What is the Log about? (optional)")
     logDescriptionLabel.config(text=f"")
     if description != "":
         logDescriptionLabel.config(text=f"Description: {description}")
@@ -70,65 +78,65 @@ def editDescClick():
 
 def recordClick():
     title = simpledialog.askstring("Input Title", "What is your Log's Title?")
-    description = simpledialog.askstring("Input Description", "What is the Log about?")
+    description = simpledialog.askstring("Input Description", "What is the Log about? (optional)")
     value = inputError(title, noteError)
     if value == 0:
         return
     
     global note_list, note_time_list
     global timer_running, elapsed_seconds, timeStart
+    interactLabel.config(text="Non-interactable")
     clear_recordTextField()
     note_list = []
     note_time_list = []
     editTitleButton.config(state=NORMAL)
     editDescButton.config(state=NORMAL)
-
     elapsed_seconds = 0
     timer_running = True
     timeStart = datetime.now()
     run_timer()
-    recordTextField.config(state=NORMAL)
-    cTime = get_current_time()
+
     logTitleLabel.config(text=f"Log Title: {title}")
     logDescriptionLabel.config(text=f"")
     if description != "":
         logDescriptionLabel.config(text=f"Description: {description}")
+    cTime = get_current_time()
     topEntry = f"{cTime} - Start of Log {title}: \n"
     note_list.append(topEntry)
     note_time_list.append(f"{cTime}")
+    recordTextField.config(state=NORMAL)
     recordTextField.insert('end -1 chars', topEntry)
-
-    clear_editNumberField()
-    clear_noteField()
-    noteError.config(text="", bg = logTabBackground)
     recordTextField.config(state=DISABLED)
+
+    clear_noteField()
+    clear_editNumberField()
+    noteError.config(text="", bg = logTabBackground)
     recordStart.config(state=DISABLED)
     recordNote.config(state=NORMAL)
     recordEnd.config(state=NORMAL)
 
 def noteClick():
-    global note_list, note_time_list
     value = inputError(noteField.get(), noteError)
     if value == 0 :
         return
     
-    recordTextField.config(state=NORMAL)
+    global note_list, note_time_list
     cTime = get_current_time()
     note_time_list.append(f"{cTime}")
     content = f"{noteField.get()}"
     note_list.append(content)
+    recordTextField.config(state=NORMAL)
     recordTextField.insert('end -1 chars', f"[{len(note_list) - 1}] {cTime} - {content} \n")
-    clear_editNumberField()
-    clear_noteField()
-    noteError.config(text="", bg = logTabBackground)
     recordTextField.config(state=DISABLED)
+
+    clear_noteField()
+    clear_editNumberField()
+    noteError.config(text="", bg = logTabBackground)
     return
 
 def endClick():
     global timeStart, timeEnd
     global timer_running, elapsed_seconds, timer_job, timeStart
-    
-    recordTextField.config(state=NORMAL)
     cTime = get_current_time()
     timeEnd = datetime.now()
     
@@ -137,8 +145,13 @@ def endClick():
         window.after_cancel(timer_job)
         timer_job = None
     total_time = timedelta(seconds=elapsed_seconds)
-
+    recordTextField.config(state=NORMAL)
     recordTextField.insert('end -1 chars', f"{cTime} - End of log (Elapsed: {total_time})\n")
+    description = logDescriptionLabel.cget("text")
+    if description != "":
+        recordTextField.insert('end -1 chars',f"Log {description}")
+    
+    interactLabel.config(text="Interactable")
     clear_editNumberField()
     clear_noteField()
     noteError.config(text="", bg = logTabBackground)
@@ -181,9 +194,9 @@ def editNoteClick():
     if value == 0 :
         return
     
-    recordTextField.config(state=NORMAL)
     note_list[note_no] = noteField.get()
     clear_editNumberField()
+    recordTextField.config(state=NORMAL)
     recordTextField.delete(1.0, END)
     for i, note in enumerate(note_list, start=1):
         if i == 1:
@@ -191,6 +204,7 @@ def editNoteClick():
         else:
             recordTextField.insert(END, f"[{i-1}] {note_time_list[i-1]} - {note}\n")
     recordTextField.config(state=DISABLED)
+
     clear_editNumberField()
     clear_noteField()
     noteError.config(text="", bg = logTabBackground)
@@ -209,10 +223,10 @@ def deleteNoteClick():
         noteError.config(text="Enter a valid note number", bg = warningBackground)
         return
     
-    recordTextField.config(state=NORMAL)
     note_list.pop(note_no)
     note_time_list.pop(note_no)
     clear_editNumberField()
+    recordTextField.config(state=NORMAL)
     recordTextField.delete(1.0, END)
     for i, note in enumerate(note_list, start=1):
         if i == 1:
@@ -220,6 +234,7 @@ def deleteNoteClick():
         else:
             recordTextField.insert(END, f"[{i-1}] {note_time_list[i-1]} - {note}\n")
     recordTextField.config(state=DISABLED)
+
     clear_editNumberField()
     noteError.config(text="", bg = logTabBackground)
     return
@@ -232,22 +247,21 @@ def clear_taskField():
     enterTodoTaskField.delete(0, END)
 
 def insertTask():
-    global todoCounter
     value = inputError(enterTodoTaskField.get(), taskError)
     if value == 0 :
         return
     
-    TextArea.config(state = NORMAL)
+    global todoCounter
+    todoCounter += 1
     content = enterTodoTaskField.get()
     tasks_list.append(content)
+    TextArea.config(state = NORMAL)
     TextArea.insert('end -1 chars', f"[{todoCounter}] {content} \n")
-    todoCounter += 1
+    TextArea.config(state = DISABLED)
     clear_taskField()
     taskError.config(text="", bg = todoTabBackground)
-    TextArea.config(state = DISABLED)
 
 def delete() :
-    global todoCounter
     if not tasks_list:
         taskError.config(text="No tasks", bg = warningBackground)
         return
@@ -259,10 +273,11 @@ def delete() :
         taskError.config(text="Enter a valid task number", bg = warningBackground)
         return
 
-    TextArea.config(state = NORMAL)
+    global todoCounter
     tasks_list.pop(task_no - 1)
     todoCounter -= 1
     clear_taskNumberField()
+    TextArea.config(state = NORMAL)
     TextArea.delete(1.0, END)
     for i, task in enumerate(tasks_list, start=1):
         TextArea.insert(END, f"[{i}] {task}\n")
@@ -298,15 +313,15 @@ logTab = Frame(notebook, bg=logTabBackground)
 todoTab = Frame(notebook, bg=todoTabBackground)
 calcTab = Frame(notebook, bg=calcTabBackground)
 
-notebook.add(logTab,text="PTL")
-notebook.add(todoTab,text="Task List")
-notebook.add(calcTab,text="Calculator")
-notebook.pack(expand=True,fill="both")
+notebook.add(logTab, text="PTL")
+notebook.add(todoTab, text="Task List")
+notebook.add(calcTab, text="Calculator")
+notebook.pack(expand=True, fill="both")
 
 # logTab
 logTitle = Label(logTab,text="Personal Time Log")
 logTitle.config(font=large_font)
-logTitle.place(x=0,y=0)
+logTitle.place(x=0, y=0)
 
 recordingYpos = 100
 
@@ -327,6 +342,7 @@ editInfoLabel = Label(logTab, bg = logTabBackground, font=small_font, text="Edit
 logTitleLabel = Label(logTab, bg = logTabBackground, font=small_font, text="Log Title:")
 logDescriptionLabel = Label(logTab, bg = logTabBackground, font=small_font, text="Description:")
 recordTextField = scrolledtext.ScrolledText(logTab, font=small_font,width=50, height=11)
+interactLabel = Label(logTab, bg = logTabBackground, font=small_font, text="Non-interactable")
 
 recordStart.place(x=centerField-55, y=recordingYpos, anchor="center")
 recordEnd.place(x=centerField+55, y=recordingYpos, anchor="center")
@@ -345,9 +361,10 @@ editDescButton.place(x=centerField+80, y=recordingYpos+250, anchor="center")
 logTitleLabel.place(x=centerField, y=recordingYpos+300, anchor="center")
 logDescriptionLabel.place(x=centerField, y=recordingYpos+350, anchor="center")
 recordTextField.place(x=centerField, y=recordingYpos+550, anchor="center")
+interactLabel.place(x=centerField, y=recordingYpos+740, anchor="center")
 
 #todoTab
-todoTitle = Label(todoTab,text="Task List")
+todoTitle = Label(todoTab, text="Task List")
 todoTitle.config(font=large_font)
 todoTitle.place(x=0, y=0)
 
@@ -370,9 +387,6 @@ deleteButton.place(x=centerField, y=recordingYpos+570, anchor="center")
 taskError.place(x=centerField, y=recordingYpos+620, anchor="center")
 
 #calcTab
-twoVcmd = (calcTab.register(partial(validate_entry, max_length=2)), '%P')
-threeVcmd = (calcTab.register(partial(validate_entry, max_length=3)), '%P')
-
 calcTitle = Label(calcTab,text="Time Calculator", font=large_font)
 calcTitle.place(x=0, y=0)
 calcOrg = Label(calcTab,text="Day    hour    minute    second", font = small_font)
@@ -392,67 +406,56 @@ posFour = centerField + 95          #395
 
 #operations
 x = IntVar()
-
 plus = Radiobutton(calcTab, text="Plus+", variable=x,value=1, font=small_font)
 minus = Radiobutton(calcTab, text="Minus-", variable=x,value=2, font=small_font)
 plus.place(x=centerField-80,y=opEntries,anchor="center")
 minus.place(x=centerField+80,y=opEntries,anchor="center")
 x.set(1)
 
+twoVcmd = (calcTab.register(partial(validate_entry, max_length=2)), '%P')
+threeVcmd = (calcTab.register(partial(validate_entry, max_length=3)), '%P')
+
 # first row
-day1 = Entry(calcTab)
-day1.config(width=3, font=large_font, validate="key", validatecommand=threeVcmd)
+day1 = Entry(calcTab, width=3, font=large_font, validate="key", validatecommand=threeVcmd)
 day1.place(x=posOne, y=firstEntries, anchor="center")
 
-hour1 = Entry(calcTab)
-hour1.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+hour1 = Entry(calcTab, width=2, font=large_font, validate="key", validatecommand=twoVcmd)
 hour1.place(x=posTwo, y=firstEntries, anchor="center")
 
-minute1 = Entry(calcTab)
-minute1.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+minute1 = Entry(calcTab, width=2, font=large_font, validate="key", validatecommand=twoVcmd)
 minute1.place(x=posThree, y=firstEntries, anchor="center")
 
-second1 = Entry(calcTab)
-second1.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+second1 = Entry(calcTab, width=2, font=large_font, validate="key", validatecommand=twoVcmd)
 second1.place(x=posFour, y=firstEntries, anchor="center")
 
 # second row
-day2 = Entry(calcTab)
-day2.config(width=3, font=large_font, validate="key", validatecommand=threeVcmd)
+day2 = Entry(calcTab, width=3, font=large_font, validate="key", validatecommand=threeVcmd)
 day2.place(x=posOne, y=secondEntries, anchor="center")
 
-hour2 = Entry(calcTab)
-hour2.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+hour2 = Entry(calcTab, width=2, font=large_font, validate="key", validatecommand=twoVcmd)
 hour2.place(x=posTwo, y=secondEntries, anchor="center")
 
-minute2 = Entry(calcTab)
-minute2.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+minute2 = Entry(calcTab, width=2, font=large_font, validate="key", validatecommand=twoVcmd)
 minute2.place(x=posThree, y=secondEntries, anchor="center")
 
-second2 = Entry(calcTab)
-second2.config(width=2, font=large_font, validate="key", validatecommand=twoVcmd)
+second2 = Entry(calcTab, width=2, font=large_font, validate="key", validatecommand=twoVcmd)
 second2.place(x=posFour, y=secondEntries, anchor="center")
 
-#sign
-showSign = Label(calcTab,text="", bg=calcTabBackground)
-showSign.config(font=small_font)
-showSign.place(relx=0.5, y=recordingYpos + 265, anchor="center")
+# indicate negative
+negativeTime = Label(calcTab,text="", bg=calcTabBackground, font=small_font)
+negativeTime.place(relx=0.5, y=recordingYpos + 265, anchor="center")
 
 # third row
-day3 = Entry(calcTab)
-day3.config(state=DISABLED, width=3, font=large_font)
+day3 = Entry(calcTab, state=DISABLED, width=3, font=large_font)
 day3.place(x=posOne, y=resultOutput, anchor="center")
 
-hour3 = Entry(calcTab)
-hour3.config(state=DISABLED, width=2, font=large_font)
+hour3 = Entry(calcTab, state=DISABLED, width=2, font=large_font)
 hour3.place(x=posTwo, y=resultOutput, anchor="center")
 
-minute3 = Entry(calcTab)
-minute3.config(state=DISABLED, width=2, font=large_font)
+minute3 = Entry(calcTab, state=DISABLED, width=2, font=large_font)
 minute3.place(x=posThree, y=resultOutput, anchor="center")
 
-second3 = Entry(calcTab)
-second3.config(state=DISABLED, width=2, font=large_font)
+second3 = Entry(calcTab, state=DISABLED, width=2, font=large_font)
 second3.place(x=posFour, y=resultOutput, anchor="center")
 
 ruleSign = Label(calcTab,text="Entry One       +/-        Entry Two        =          Result")
@@ -504,9 +507,9 @@ def calcClick():
         addNewText, sign, d3, h3, m3, s3 = subtract_time(d1, h1, m1, s1, d2, h2, m2, s2)
     
     if (sign == ""):
-        showSign.config(text="", bg=calcTabBackground)
+        negativeTime.config(text="", bg=calcTabBackground)
     elif (sign == "-"):
-        showSign.config(text="negative time!", bg=warningBackground)
+        negativeTime.config(text="negative time!", bg=warningBackground)
     historyText.insert(END, f" {addNewText}\n", "center")
     historyText.see("end")
     day3.insert(0, str(d3))
@@ -525,12 +528,10 @@ def resultClick():
     minute1.insert(0, minute3.get())
     second1.insert(0, second3.get())
     
-setResult = Button(calcTab, text="set result:")
-setResult.config(font=small_font,command=resultClick, state=DISABLED)
+setResult = Button(calcTab, text="set result:", font=small_font,command=resultClick, state=DISABLED)
 setResult.place(x=posOne-120, y=firstEntries, anchor="center")
 
-equalsButton = Button(calcTab,text="=")
-equalsButton.config(command=calcClick, font=small_font)
+equalsButton = Button(calcTab,text="=", command=calcClick, font=small_font)
 equalsButton.place(x=centerField-178, y=resultOutput, anchor="center")
 
 window.mainloop()
